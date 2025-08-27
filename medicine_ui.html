@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Intake Detection - Face & Hand Masking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9ff;
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-section.dragover {
+            border-color: #28a745;
+            background: #f0fff4;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .processing-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .option-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .option-card.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .checkbox {
+            margin: 15px;
+        }
+
+        .checkbox input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .video-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .video-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading { animation: pulse 1.5s infinite; }
+
+        @media (max-width: 768px) {
+            .video-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Medicine Intake Detection</h1>
+            <p>Upload a video to detect and mask faces and hands for privacy protection</p>
+        </div>
+
+        <div class="main-content">
+            <!-- File Upload Section -->
+            <div class="upload-section" onclick="document.getElementById('videoFile').click()">
+                <div class="upload-icon">📹</div>
+                <h3>Drop your video file here or click to browse</h3>
+                <p>Supported formats: MP4, AVI, MOV, WebM</p>
+                <input type="file" id="videoFile" class="file-input" accept="video/*" onchange="handleFileSelect(event)">
+                <div id="selectedFile" style="margin-top: 15px; display: none;">
+                    <strong>Selected: </strong><span id="fileName"></span>
+                </div>
+            </div>
+
+            <!-- Processing Options -->
+            <div class="processing-options">
+                <div class="option-card active" onclick="toggleOption('face')">
+                    <div class="option-icon">😷</div>
+                    <h3>Face Masking</h3>
+                    <p>Detect and blur faces for privacy</p>
+                    <div class="checkbox">
+                        <input type="checkbox" id="maskFace" checked>
+                        <label for="maskFace">Enable face masking</label>
+                    </div>
+                </div>
+
+                <div class="option-card active" onclick="toggleOption('hands')">
+                    <div class="option-icon">🤚</div>
+                    <h3>Hand Masking</h3>
+                    <p>Detect and blur hands for privacy</p>
+                    <div class="checkbox">
+                        <input type="checkbox" id="maskHands" checked>
+                        <label for="maskHands">Enable hand masking</label>
+                    </div>
+                </div>
+
+                <div class="option-card" onclick="toggleOption('medicine')">
+                    <div class="option-icon">💊</div>
+                    <h3>Medicine Detection</h3>
+                    <p>Identify medicine intake actions</p>
+                    <div class="checkbox">
+                        <input type="checkbox" id="detectMedicine">
+                        <label for="detectMedicine">Enable medicine detection</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Process Button -->
+            <div style="text-align: center;">
+                <button class="upload-btn" id="processBtn" onclick="processVideo()" disabled>
+                    🚀 Process Video
+                </button>
+            </div>
+
+            <!-- Status and Progress -->
+            <div id="status" class="status"></div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <h2 style="text-align: center; margin-bottom: 30px;">Processing Results</h2>
+                <div class="video-container">
+                    <div class="video-card">
+                        <h3>Original Video</h3>
+                        <video id="originalVideo" controls></video>
+                    </div>
+                    <div class="video-card">
+                        <h3>Processed Video (Masked)</h3>
+                        <video id="processedVideo" controls></video>
+                    </div>
+                </div>
+                <div id="detectionResults" style="margin-top: 30px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // Handle drag and drop
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            handleFile(file);
+        }
+
+        function handleFile(file) {
+            if (file && file.type.startsWith('video/')) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('selectedFile').style.display = 'block';
+                document.getElementById('processBtn').disabled = false;
+                
+                // Show original video preview
+                const originalVideo = document.getElementById('originalVideo');
+                originalVideo.src = URL.createObjectURL(file);
+                
+                showStatus(`File selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'success');
+            } else {
+                showStatus('Please select a valid video file', 'error');
+            }
+        }
+
+        function toggleOption(type) {
+            const card = event.currentTarget;
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        }
+
+        async function processVideo() {
+            if (!selectedFile) {
+                showStatus('Please select a video file first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            // Add processing options
+            formData.append('mask_face', document.getElementById('maskFace').checked);
+            formData.append('mask_hands', document.getElementById('maskHands').checked);
+            formData.append('detect_medicine', document.getElementById('detectMedicine').checked);
+
+            // Show loading state
+            showStatus('Processing video... This may take a few minutes.', 'loading');
+            showProgress(0);
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('processBtn').classList.add('loading');
+
+            // Simulate progress (you can update this with real progress from your API)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                showProgress(progress);
+            }, 500);
+
+            try {
+                // Replace with your actual API endpoint
+                const response = await fetch('http://localhost:8000/process-video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+                showProgress(100);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showStatus('Video processed successfully!', 'success');
+                    displayResults(result);
+                } else {
+                    const error = await response.text();
+                    showStatus(`Processing failed: ${error}`, 'error');
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                showStatus(`Error: ${error.message}. Make sure your FastAPI server is running on http://localhost:8000`, 'error');
+            }
+
+            // Reset button state
+            document.getElementById('processBtn').disabled = false;
+            document.getElementById('processBtn').classList.remove('loading');
+            hideProgress();
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function showProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = `${percent}%`;
+        }
+
+        function hideProgress() {
+            document.getElementById('progressBar').style.display = 'none';
+        }
+
+        function displayResults(results) {
+            const resultsSection = document.getElementById('resultsSection');
+            const detectionResults = document.getElementById('detectionResults');
+            
+            // Show processed video if available
+            if (results.processed_video_url) {
+                const processedVideo = document.getElementById('processedVideo');
+                processedVideo.src = results.processed_video_url;
+            }
+
+            // Display detection results
+            let resultsHTML = '<div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">';
+            resultsHTML += '<h3>Detection Results:</h3>';
+            
+            if (results.face_detections) {
+                resultsHTML += `<p><strong>Faces detected:</strong> ${results.face_detections}</p>`;
+            }
+            
+            if (results.hand_detections) {
+                resultsHTML += `<p><strong>Hands detected:</strong> ${results.hand_detections}</p>`;
+            }
+            
+            if (results.medicine_events) {
+                resultsHTML += `<p><strong>Medicine intake events:</strong> ${results.medicine_events}</p>`;
+            }
+            
+            if (results.processing_time) {
+                resultsHTML += `<p><strong>Processing time:</strong> ${results.processing_time} seconds</p>`;
+            }
+            
+            resultsHTML += '</div>';
+            
+            detectionResults.innerHTML = resultsHTML;
+            resultsSection.style.display = 'block';
+        }
+
+        // Test API connection on page load
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://localhost:8000/');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API connected:', data);
+                }
+            } catch (error) {
+                showStatus('Warning: Cannot connect to API server. Make sure your FastAPI server is running on http://localhost:8000', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

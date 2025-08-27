@@ -1,0 +1,44 @@
+# Clean requirements with pinned versions
+# Core web framework
+fastapi==0.95.1
+uvicorn==0.22.0
+python-multipart==0.0.6
+pydantic==1.10.12
+
+# Utilities
+requests==2.31.0
+python-dotenv==1.0.0
+
+# ML/AI packages
+numpy<2
+mediapipe==0.10.21
+opencv-python-headless==4.8.0.76
+
+# LangChain ecosystem (pinned versions)
+langchain==0.1.0
+langchain-openai==0.0.5
+openai==1.24.0
+
+# Optional packages
+streamlit==1.24.1
+Pillow
+aiofiles
+
+
+
+
+# Install your packages with the versions from your requirements
+#pip install numpy==1.24.4
+#pip install mediapipe==0.10.21
+#pip install opencv-python-headless==4.8.0.76
+#pip install streamlit==1.24.1
+#pip install fastapi==0.95.1
+#pip install uvicorn==0.22.0
+#pip install requests==2.31.0
+#pip install pydantic==1.10.12
+#pip install python-multipart==0.0.6
+#pip install python-dotenv==1.0.0
+#pip install "openai>=1.24.0,<2.0.0"
+#pip install langchain-openai==0.1.7
+#pip install langchain 
+

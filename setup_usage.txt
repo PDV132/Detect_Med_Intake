@@ -1,0 +1,393 @@
+# Enhanced Medicine Intake Detection System
+
+## 🚀 Features
+
+### Core Detection Features
+- **Medicine Intake Gesture Recognition**: Detects hand-to-mouth movements with head tilt
+- **Medicine Object Detection**: Identifies medicine strips and bottles being held
+- **Enhanced MediaPipe Integration**: Uses pose, hand, and face detection
+- **High Accuracy**: Multiple confidence scores for reliable detection
+
+### Live Monitoring Features
+- **Webcam Monitoring**: Real-time medicine intake detection via webcam
+- **Scheduled Monitoring**: Daily automated monitoring at specific times
+- **Background Service**: Runs as a service for 24/7 monitoring
+- **Smart Alerts**: Email notifications for missed medicine or system errors
+
+### Advanced Analytics
+- **Monitoring Dashboard**: Visual analytics and success rate tracking
+- **Historical Data**: Store and analyze monitoring results over time
+- **Compliance Tracking**: Track medication adherence patterns
+- **Export Capabilities**: Download results in JSON format
+
+## 📋 Prerequisites
+
+- Python 3.8 or higher
+- Webcam/camera access
+- Windows/Linux/macOS support
+
+## 🛠️ Installation
+
+### Step 1: Clone and Setup Environment
+
+```bash
+# Clone the repository (or extract files)
+cd medicine-intake-detection
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r enhanced_requirements.txt
+```
+
+### Step 2: Configuration
+
+Create a `.env` file for API keys (optional):
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+```
+
+### Step 3: Directory Setup
+
+```bash
+# Create necessary directories
+mkdir uploads
+mkdir monitoring_results
+mkdir monitoring_clips
+mkdir temp
+mkdir logs
+```
+
+## 🎯 Usage
+
+### Method 1: Complete Web Interface (Recommended)
+
+1. **Start the Enhanced Backend**:
+```bash
+python enhanced_api_backend.py
+# or
+uvicorn enhanced_api_backend:app --reload --host 0.0.0.0 --port 8000
+```
+
+2. **Start the Enhanced Frontend**:
+```bash
+streamlit run enhanced_app.py
+```
+
+3. **Access the Web Interface**:
+   - Open http://localhost:8501 in your browser
+   - Use the sidebar to navigate between features
+
+### Method 2: Standalone Monitoring Service
+
+For 24/7 automated monitoring:
+
+```bash
+# Start the monitoring scheduler service
+python monitoring_scheduler.py
+
+# Add scheduled monitoring times
+python monitoring_scheduler.py --add-schedule "09:00" 60
+python monitoring_scheduler.py --add-schedule "21:00" 60
+
+# Check status
+python monitoring_scheduler.py --status
+
+# Run test session
+python monitoring_scheduler.py --test
+```
+
+### Method 3: Direct API Usage
+
+```bash
+# Start API server
+uvicorn enhanced_api_backend:app --reload
+
+# Test with curl
+curl -X POST "http://localhost:8000/start-live-monitoring/" \
+     -H "Content-Type: application/json" \
+     -d '{"duration": 60}'
+```
+
+### Method 4: Direct Detection Script
+
+```bash
+# Process video file
+python enhanced_detect_mediapipe_gesture.py video.mp4
+
+# Start live monitoring for 60 seconds
+python enhanced_detect_mediapipe_gesture.py --live 60
+
+# Schedule daily monitoring at 9 AM for 60 seconds
+python enhanced_detect_mediapipe_gesture.py --schedule "09:00" 60
+```
+
+## 📊 Features Guide
+
+### 1. Video Upload & Analysis
+
+**What it does**: Upload and analyze pre-recorded videos
+**How to use**:
+1. Navigate to "🎬 Video Upload" in the web interface
+2. Upload an MP4, AVI, MOV, or MKV file
+3. Click "🔍 Analyze Video"
+4. View detailed results including object detection
+
+**Best practices**:
+- Ensure good lighting
+- Hold medicine strip/bottle visibly in one hand
+- Make clear hand-to-mouth movements
+- Tilt head slightly back when swallowing
+
+### 2. Live Webcam Monitoring
+
+**What it does**: Real-time monitoring using your webcam
+**How to use**:
+1. Navigate to "📹 Live Monitoring"
+2. Set monitoring duration (30-300 seconds)
+3. Click "▶️ Start Live Monitoring"
+4. Results are automatically saved
+
+**Use cases**:
+- Immediate verification of medicine intake
+- Testing camera setup and positioning
+- Manual monitoring sessions
+
+### 3. Scheduled Daily Monitoring
+
+**What it does**: Automatic monitoring at specific times daily
+**How to use**:
+1. Navigate to "⏰ Scheduling"
+2. Set time (e.g., 09:00 for 9 AM)
+3. Set duration (recommended: 60-120 seconds)
+4. Click "➕ Add Schedule"
+
+**Recommended schedule**:
+- Morning: 08:00-09:00 (60-120 seconds)
+- Evening: 20:00-22:00 (60-120 seconds)
+
+### 4. Results & Analytics
+
+**What it does**: View historical data and compliance tracking
+**Features**:
+- Success rate over time
+- Detection timeline visualization  
+- Detailed session results
+- Export capabilities
+
+## 🔧 Configuration
+
+### Monitoring Settings
+
+Create `monitoring_config.json`:
+
+```json
+{
+  "scheduled_times": [
+    {"time": "09:00", "duration": 60, "enabled": true},
+    {"time": "21:00", "duration": 60, "enabled": true}
+  ],
+  "monitoring_settings": {
+    "max_missed_days": 2,
+    "alert_caregivers": true,
+    "save_video_clips": false,
+    "detection_sensitivity": "medium"
+  },
+  "email_notifications": {
+    "enabled": true,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "username": "your_email@gmail.com",
+    "password": "your_app_password",
+    "recipients": ["caregiver@email.com", "family@email.com"]
+  },
+  "storage": {
+    "results_directory": "monitoring_results",
+    "video_clips_directory": "monitoring_clips",
+    "max_storage_days": 30
+  }
+}
+```
+
+### Email Notifications Setup
+
+1. **Gmail Setup**:
+   - Enable 2-factor authentication
+   - Generate an app password
+   - Use app password in configuration
+
+2. **Notification Types**:
+   - ✅ Success: Medicine intake confirmed
+   - ⚠️ Alert: Missed medicine (configurable threshold)
+   - ❌ Error: System errors or camera issues
+
+## 📱 Detection Technology
+
+### What Gets Detected
+
+1. **Hand Gestures**:
+   - Hand position near mouth area
+   - Hand-to-mouth movement patterns
+   - Gesture timing and duration
+
+2. **Head Position**:
+   - Head tilt backward (swallowing position)
+   - Face orientation and angle
+   - Head movement patterns
+
+3. **Medicine Objects**:
+   - **Medicine Strips**: Detects silver/metallic backing
+   - **Medicine Bottles**: Detects white/amber containers
+   - Object held in non-dominant hand
+   - Size and shape analysis
+
+### Confidence Scoring
+
+The system provides multiple confidence scores:
+- **Hand-Mouth Distance**: Proximity accuracy
+- **Head Tilt**: Head position confidence  
+- **Medicine Object**: Object detection confidence
+- **Overall Confidence**: Combined score
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **"API not accessible"**:
+   ```bash
+   # Make sure backend is running
+   uvicorn enhanced_api_backend:app --reload
+   ```
+
+2. **"Could not access webcam"**:
+   - Check camera permissions
+   - Close other applications using camera
+   - Try different camera index (0, 1, 2...)
+
+3. **"Medicine object not detected"**:
+   - Hold medicine strip/bottle more prominently
+   - Ensure good lighting
+   - Use contrasting background
+   - Hold object in non-gesture hand
+
+4. **"No gesture detected"**:
+   - Make more deliberate hand-to-mouth movements
+   - Tilt head back slightly when swallowing
+   - Ensure upper body is visible
+   - Check camera positioning
+
+### Performance Optimization
+
+1. **Reduce CPU usage**:
+   - Decrease monitoring frequency
+   - Lower camera resolution
+   - Disable video recording
+
+2. **Improve accuracy**:
+   - Ensure proper lighting
+   - Position camera at chest level
+   - Use solid background
+   - Hold medicine objects clearly
+
+## 📦 File Structure
+
+```
+medicine-intake-detection/
+├── enhanced_detect_mediapipe_gesture.py  # Core detection engine
+├── enhanced_api_backend.py               # FastAPI backend
+├── enhanced_app.py                       # Streamlit frontend
+├── monitoring_scheduler.py               # Scheduling service
+├── agents.py                             # Multi-agent workflow
+├── requirements.txt                      # Dependencies
+├── monitoring_config.json                # Configuration
+├── uploads/                              # Uploaded videos
+├── monitoring_results/                   # JSON results
+├── monitoring_clips/                     # Recorded clips (optional)
+└── logs/                                # Log files
+```
+
+## 🔒 Privacy & Security
+
+- **Local Processing**: All detection runs locally
+- **Optional Recording**: Video clips only saved if enabled
+- **Data Retention**: Configurable cleanup (default: 30 days)
+- **No Cloud**: No data sent to external services (except optional OpenAI for explanations)
+
+## 🚀 Running as a Service
+
+### Windows Service
+
+```batch
+# Install as Windows service
+sc create MedicineMonitor binPath="C:\path\to\python.exe C:\path\to\monitoring_scheduler.py"
+sc start MedicineMonitor
+```
+
+### Linux Systemd Service
+
+Create `/etc/systemd/system/medicine-monitor.service`:
+
+```ini
+[Unit]
+Description=Medicine Intake Monitoring Service
+After=network.target
+
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/path/to/medicine-intake-detection
+ExecStart=/path/to/venv/bin/python monitoring_scheduler.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+```bash
+sudo systemctl enable medicine-monitor.service
+sudo systemctl start medicine-monitor.service
+```
+
+## 📞 Support
+
+For issues, improvements, or questions:
+1. Check the troubleshooting section
+2. Review log files in the `logs/` directory
+3. Test with mock data first
+4. Verify camera and lighting setup
+
+## 🔄 Updates and Maintenance
+
+### Regular Maintenance
+
+1. **Clean old files**:
+   ```bash
+   # Automatic cleanup runs daily at 2 AM
+   # Manual cleanup:
+   python monitoring_scheduler.py --cleanup
+   ```
+
+2. **Check system health**:
+   ```bash
+   python monitoring_scheduler.py --status
+   ```
+
+3. **Update dependencies**:
+   ```bash
+   pip install -r enhanced_requirements.txt --upgrade
+   ```
+
+### Backup Important Data
+
+- Configuration: `monitoring_config.json`
+- Results: `monitoring_results/` directory

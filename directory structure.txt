@@ -1,0 +1,14 @@
+Medicine_Intake/
+├── api_backend.py
+├── agents.py
+├── app.py
+├── requirements.txt
+├── .env
+├── setup.sh (or setup.bat for Windows)
+├── run_system.sh (or run_system.bat for Windows)
+├── test_system.py
+├── detect_mediapipe_gesture.py (your existing file)
+├── uploads/
+├── temp/
+├── logs/
+└── output_clips/
